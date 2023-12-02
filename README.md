@@ -27,6 +27,14 @@ The following shows the milestones that were followed when completing the projec
     - Defined a separate initialise method for the SQLAlchemy engine to be used in the main initilising method.
     - Defined a method to extract the credentials provided by the class using the Pandas library.
     - Defined a method to store the extracted data locally as a `loan_payments.csv` file. 
+- **Milestone 3**: Exploratory Data Analysis
+    - Converted the columns to the correct format
+    - Created a `DataFrameInfo` class which contained methods to extract information from the dataframe.
+    - Created a `Plotter` class for visualisation and insights of the data
+    - Created methods within the two classes to discover skewness, outlier and correlation between data in the dataframe to judge which columns to remove from analysis
+-**Milestone 4**: Analysis and Visualation:
+    - Focused on further analysis of the data to get deeper insights to find patterns or trends.
+    - Used the data to discover areas like: Calculating loss, calculating projected loss, possible loss and indicators of loss
 
 ## File structure
 - **`credentials.yaml`**: A hidden file which contains the database credentials, added to the `.gitignore` file.

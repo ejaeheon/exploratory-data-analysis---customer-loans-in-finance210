@@ -23,14 +23,12 @@ def read_yaml():
         credentials = yaml.safe_load(file)
     return credentials
 
-# Milestone 2
+
 class RDSDatabaseConnector:
-    # Milestone 2
     def __init__(self):
         self.credentials = read_yaml()
         self.engine = self.init_sqlalchemy_engine()
-    
-    # Milestone 2
+
     def init_sqlalchemy_engine(self):
         """
         Initialises the SQLAlchemy engine from the credentials provided from class.
@@ -38,11 +36,9 @@ class RDSDatabaseConnector:
         sqlalchemy_engine = create_engine(f"postgresql://{self.credentials['RDS_USER']}:{self.credentials['RDS_PASSWORD']}@{self.credentials['RDS_HOST']}:{self.credentials['RDS_PORT']}/{self.credentials['RDS_DATABASE']}")
         return sqlalchemy_engine
     
-    # Milestone 2
     def extract_RDS(self):
         """
         Extracts the data from the RDS database 
-        Output: returns a Pandas data frame of the table.
         """
         table_name = "loan_payments"
         df = pd.read_sql(f"SELECT * FROM {table_name};", self.engine)
@@ -52,7 +48,6 @@ class RDSDatabaseConnector:
     def save_to_csv(self, df):
         """
         Saves the data to local machine as .csv format
-        Output: .csv file of the dataframe
         """
         return df.to_csv('loan_payments.csv', index = False)
 
@@ -117,42 +112,61 @@ transformer.to_category(to_category_columns)
 class DataFrameInfo:
     """
     This class extracts information fmo the dataframe and its columns
-    Methods:
-    - describe_columns: Describe all columns in the DataFrame to check their data types
-    - get_statistical_values: get median, standard deviation and mean from the columns and the DataFrame
-    - distinct_value_count: count all distinct values in categorical columns
-    - print_dataframe_shape: print out the shape of the dataframe
-    - null_count: count all null values in each column
-    - null_percentage: percentage of null values in each column
-    - dataframe_correlation_matrix: prints out the correlation matrix of the dataframe
-    - iqr: returns the interquartile range
     """
-    
     def __init__(self, df):
         self.df = df
     
     def describe_columns(self):
+        """
+        describe_columns: Describe all columns in the DataFrame to check their data types
+        """
         return self.df.info()
     
     def get_statistical_values(self):
+        """
+        get_statistical_values: get median, standard deviation and mean from the columns and the DataFrame
+
+        """
         return self.df.describe()
     
     def distinct_value_count(self, column_name):
+        """
+        distinct_value_count: count all distinct values in categorical columns
+
+        """
         return self.df[column_name].value_counts(dropna = False)
     
     def print_dataframe_shape(self):
+        """
+        print_dataframe_shape: print out the shape of the dataframe
+        """
         return self.df.shape
     
     def null_count(self):
+        """
+        null_count: count all null values in each column
+
+        """
         return self.df.isna().sum()
     
     def null_percentage(self):
+        """
+        null_percentage: percentage of null values in each column
+        """
         return (self.df.isna().sum() / len(self.df)) * 100        
     
     def dataframe_correlation_matrix(self):
+        """
+        dataframe_correlation_matrix: prints out the correlation matrix of the dataframe
+
+        """
         return self.df.corr()
     
     def iqr(self, column_name):
+        """
+        iqr: returns the interquartile range
+
+        """
         Q1 = self.df[column_name].quantile(0.25)
         Q3 = self.df[column_name].quantile(0.75)
         IQR = Q3 - Q1
@@ -170,18 +184,30 @@ class DataFrameTransform:
         self.df = df
         
     def remove_columns(self):
+        """
+        drops columns based on inspections for skewness and outliers
+        """
         drop_columns = ['mths_since_last_delinq', 'mths_since_last_record', 'next_payment_date', 'mths_since_last_major_derog', 'application_type', 'policy_code', 'out_prncp_inv', 'total_payment_inv', 'id']
         return self.df.drop(columns = drop_columns, inplace = True)
     
     def impute_median(self, name):
+        """
+        imputing method using a median
+        """
         median_val = self.df[name].median() # Finds the median value of the column
         return self.df[name].fillna(value = median_val, inplace = True)
             
     def impute_mode(self, name):
+        """
+        imputing method using mode for objects and category data types
+        """
         mode_val = self.df[name].mode().iloc[0] # Finds the mode value of the column
         return self.df[name].fillna(value = mode_val, inplace = True)
             
     def impute_null_values(self):
+        """
+        Main method for imputing null values, uses the previous two helper methods to impute null values
+        """
         self.remove_columns()
         for name in self.df.columns:
             if self.df.dtypes[name] == 'int64' or self.df.dtypes[name] == 'float64' or self.df.dtypes[name] == 'datetime64[ns]':
@@ -190,6 +216,9 @@ class DataFrameTransform:
                 self.impute_mode(name)
                
     def skew_log_transform(self, column_names):
+        """
+        Method for transforming the data using log transform to correct skewness
+        """
         for name in column_names:
             log_df_column = self.df[name].map(lambda x: np.log(x) if x > 0 else 0)
             # print(self.df[name])
@@ -197,6 +226,9 @@ class DataFrameTransform:
             # print(self.df[name])
                 
     def skew_boxcox_transform(self, column_names):
+        """
+        Method for transforming the data using boxcox transform to correct skewness
+        """
         for name in column_names:      
             boxcox_column = self.df[name] + 0.01
             boxcox_column = stats.boxcox(boxcox_column)
@@ -206,6 +238,9 @@ class DataFrameTransform:
             # print(self.df[name])
             
     def remove_IQR_outliers(self, column_names):
+        """
+        Method for removing outliers based on values from discovering the IQR
+        """
         # Calculate the Q1, Q3, and IQR
         Q1 = self.df[column_names].quantile(0.25)
         Q3 = self.df[column_names].quantile(0.75)
@@ -223,8 +258,9 @@ class DataFrameTransform:
             self.df = self.df[(lower_bound[name] <= self.df[name]) & (self.df[name] <= upper_bound[name])]
     
     
-         
+#list of columns for boxcox transformation
 boxcox_col = ['loan_amount', 'funded_amount', 'funded_amount_inv', 'int_rate', 'instalment', 'dti', 'total_payment']
+#list of columns for log transformation
 log_col = ['annual_inc', 'open_accounts', 'last_payment_amount']
 
     
@@ -233,28 +269,35 @@ trans_dataframe.impute_null_values()
 trans_dataframe.skew_boxcox_transform(boxcox_col)
 trans_dataframe.skew_log_transform(log_col)
 
-
+# List of columns that are numerical and show skewness.
 skew_num_cols = ['loan_amount', 'funded_amount', 'funded_amount_inv', 'int_rate', 'instalment', 'annual_inc','dti', 'total_payment', 'open_accounts','total_accounts', 'last_payment_amount']
 
 
 class Plotter:
     """
     This class is used to visualise insights from the data.
-    
-    Methods:
     """
     def __init__(self, df):
         self.df = df
     
     def plot_missing_values(self):
+        """
+        This method plots missing values within the dataframe using a bar chart
+        """
         msno.bar(self.df)
         plt.show()
         
     def null_matrix(self):
+        """
+        Plots missing values within the dataframe using a matrix
+        """
         msno.matrix(self.df)
         plt.show()
     
     def plot_skew_data_hist(self, column_names):
+        """
+        Histogram used to plot and discover skewed data    
+        """
         sns.set(font_scale=0.7)
         f = pd.melt(self.df, value_vars = column_names)
         g = sns.FacetGrid(f, col = "variable", col_wrap = 4, sharex = False, sharey = False)
@@ -262,11 +305,17 @@ class Plotter:
         plt.show()
         
     def plot_qq_skew(self, column_name):
+        """
+        QQ graph used to plot and discover skewed data    
+        """
         self.df.sort_values(by = column_name, ascending=True)
         qq_plot = qqplot(self.df[column_name], scale=1, line='q')
         pyplot.show()
         
     def plot_skew_value(self, column_names):
+        """
+        A method for displaying the skew value of a column    
+        """
         skew_value = []
         for name in column_names:
             skew_value.append([name, self.df[name].skew()])
@@ -274,6 +323,9 @@ class Plotter:
         print(tabulate(skew_value, headers = ["Column", "Skewness"], tablefmt = "github"))
         
     def box_plot_outliers(self, column_names):
+        """
+        A box plot graph to plot and discover skewed data   
+        """
         sns.set(font_scale = 0.7)
         f = pd.melt(self.df, value_vars = column_names)
         g = sns.FacetGrid(f, col = "variable", col_wrap = 4, sharex = False, sharey = False)
@@ -281,6 +333,9 @@ class Plotter:
         plt.show()
         
     def visualize_correlation_matrix(self, column_names):
+        """
+        A method to display the correlation matrix of the data frame to discover correlation
+        """
         correlation_matrix = self.df[column_names].corr()
         plt.figure(figsize = (14, 10))
         g = sns.heatmap(correlation_matrix, annot = True, fmt = '.1f', linewidth = .5)
@@ -304,7 +359,7 @@ plot = Plotter(script_df)
 
 
 """
-The following columns will be removed due to high correlation for the next exercises:
+The following columns will be removed due to high correlation:
 - funded_amount
 - funded_amount_inv
 - instalment
