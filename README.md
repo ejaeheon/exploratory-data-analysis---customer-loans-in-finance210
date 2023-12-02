@@ -16,13 +16,10 @@ Ensure all necessary libraries and tools and installed.
 The following shows the milestones that were followed when completing the project.
 
 - **Milestone 1**: Setting up the environment
-\
     - Created a new GitHub repository, then cloned onto local machine
     - Installed necessary tools/packages/libraries to start making developments
-\
 
 - **Milestone 2**: Extract the loans data from the cloud
-\
     - Created the `db_utils.py` file which contains the `RDSDatabaseConnector` class to extract the data from the database.
     - Created the `credentials.yaml` file which is used to store the database credentials and added the yaml file to the `.gitignore` file for security reasons
     - Defined the `RDSDatabaseConnector` class to take the `credentials.yaml` file and return the data dictionary as the class will use to connect to the remote database.
@@ -30,7 +27,6 @@ The following shows the milestones that were followed when completing the projec
     - Defined a separate initialise method for the SQLAlchemy engine to be used in the main initilising method.
     - Defined a method to extract the credentials provided by the class using the Pandas library.
     - Defined a method to store the extracted data locally as a `loan_payments.csv` file. 
-\
 
 ## File structure
 - **`credentials.yaml`**: A hidden file which contains the database credentials, added to the `.gitignore` file.
